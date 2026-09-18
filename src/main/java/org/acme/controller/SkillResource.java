@@ -36,6 +36,15 @@ public class SkillResource {
         return Response.status(Response.Status.CREATED).entity(skill).build();
     }
 
+    @POST
+    @Transactional
+    @Path("/list")
+    public Response create(List<Skill> skills) {
+
+        Skill.persist(skills);
+        return Response.status(Response.Status.CREATED).build();
+    }
+
     @PUT
     @Path("/{id}")
     @Transactional
