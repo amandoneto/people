@@ -7,7 +7,7 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
-@Table(name = "tb_allocation")
+@Table(name = "tb_allocation", schema = "talent")
 public class Allocation extends PanacheEntityBase {
 
     @Id
