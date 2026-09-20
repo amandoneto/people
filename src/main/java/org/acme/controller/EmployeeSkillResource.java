@@ -9,7 +9,10 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Path("/api/employee-skills")
@@ -20,6 +23,27 @@ public class EmployeeSkillResource {
     @GET
     public List<EmployeeSkill> listAll() {
         return EmployeeSkill.listAll();
+    }
+
+    @POST
+    @Path("/search")
+    @Transactional
+    public Map<String, List<String>> findEmployeesBySkills(List<String> skillNames) {
+        Map<String, List<String>> employeesBySkill = new LinkedHashMap<>();
+        skillNames.forEach(skillName -> employeesBySkill.put(skillName, new ArrayList<>()));
+
+        EmployeeSkill.findBySkillNames(skillNames)
+                .stream()
+                .forEach(employeeSkill -> {
+                    String skillName = employeeSkill.skill.name;
+                    String employeeName = employeeSkill.employee.name;
+                    List<String> employeeNames = employeesBySkill.get(skillName);
+                    if (!employeeNames.contains(employeeName)) {
+                        employeeNames.add(employeeName);
+                    }
+                });
+
+        return employeesBySkill;
     }
 
     @POST
