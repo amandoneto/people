@@ -1,16 +1,12 @@
 package org.acme.controller;
 
-import org.acme.model.Employee;
 import org.acme.model.EmployeeSkill;
-import org.acme.model.EmployeeSkillId;
-import org.acme.model.Skill;
+import org.acme.service.EmployeeSkillService;
 
-import jakarta.transaction.Transactional;
+import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -20,72 +16,38 @@ import java.util.UUID;
 @Consumes(MediaType.APPLICATION_JSON)
 public class EmployeeSkillResource {
 
+    @Inject
+    EmployeeSkillService service;
+
     @GET
     public List<EmployeeSkill> listAll() {
-        return EmployeeSkill.listAll();
+        return service.listAll();
     }
 
     @POST
     @Path("/search")
-    @Transactional
     public Map<String, List<String>> findEmployeesBySkills(List<String> skillNames) {
-        Map<String, List<String>> employeesBySkill = new LinkedHashMap<>();
-        skillNames.forEach(skillName -> employeesBySkill.put(skillName, new ArrayList<>()));
-
-        EmployeeSkill.findBySkillNames(skillNames)
-                .stream()
-                .forEach(employeeSkill -> {
-                    String skillName = employeeSkill.skill.name;
-                    String employeeName = employeeSkill.employee.name;
-                    List<String> employeeNames = employeesBySkill.get(skillName);
-                    if (!employeeNames.contains(employeeName)) {
-                        employeeNames.add(employeeName);
-                    }
-                });
-
-        return employeesBySkill;
+        return service.findEmployeesBySkills(skillNames);
     }
 
     @POST
-    @Transactional
     public Response create(EmployeeSkill employeeSkill) {
-        // Valida se o funcionário e a skill existem antes de associar
-        Employee employee = Employee.findById(employeeSkill.employee.id);
-        Skill skill = Skill.findById(employeeSkill.skill.id);
-
-        if (employee == null || skill == null) {
+        EmployeeSkill createdEmployeeSkill = service.create(employeeSkill);
+        if (createdEmployeeSkill == null) {
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity("Employee ou Skill não encontrados.")
                     .build();
         }
 
-        // Cria a chave composta
-        EmployeeSkillId id = new EmployeeSkillId(employeeSkill.employee.id, employeeSkill.skill.id);
-
-        // Instancia e preenche a entidade
-        EmployeeSkill newEmployeeSkill = new EmployeeSkill();
-        newEmployeeSkill.id = id;
-        newEmployeeSkill.employee = employee;
-        newEmployeeSkill.skill = skill;
-        newEmployeeSkill.proficiencyLevel = employeeSkill.proficiencyLevel;
-
-        newEmployeeSkill.persist();
-
-        return Response.status(Response.Status.CREATED).entity(employeeSkill).build();
+        return Response.status(Response.Status.CREATED).entity(createdEmployeeSkill).build();
     }
 
     @DELETE
     @Path("/{employeeId}/{skillId}")
-    @Transactional
     public Response delete(@PathParam("employeeId") UUID employeeId, @PathParam("skillId") UUID skillId) {
-        EmployeeSkillId id = new EmployeeSkillId(employeeId, skillId);
-        EmployeeSkill entity = EmployeeSkill.findById(id);
-
-        if (entity == null) {
+        if (!service.delete(employeeId, skillId)) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-
-        entity.delete();
         return Response.status(Response.Status.NO_CONTENT).build();
     }
 }
