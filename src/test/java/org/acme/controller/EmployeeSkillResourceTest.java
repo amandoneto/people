@@ -79,6 +79,22 @@ class EmployeeSkillResourceTest {
                 .body(skillB, not(hasItem(employeeA)));
     }
 
+    @Test
+    void rejectsAssociationWhenEmployeeOrSkillDoesNotExist() {
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("employee", Map.of("id", java.util.UUID.randomUUID().toString()));
+        payload.put("skill", Map.of("id", java.util.UUID.randomUUID().toString()));
+        payload.put("proficiencyLevel", "Advanced");
+
+        given()
+                .contentType(ContentType.JSON)
+                .body(payload)
+                .when()
+                .post("/api/employee-skills")
+                .then()
+                .statusCode(400);
+    }
+
     private String createEmployee() {
         return createEmployee("Employee Skill Owner " + uniqueLetters());
     }

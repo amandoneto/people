@@ -1,12 +1,13 @@
 package org.acme.controller;
 
+import org.acme.dto.PaginatedResponse;
 import org.acme.model.Employee;
+import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
 @Path("/api/employees")
@@ -15,8 +16,22 @@ import java.util.UUID;
 public class EmployeeResource {
 
     @GET
-    public List<Employee> listAll() {
-        return Employee.listAll();
+    public PaginatedResponse<Employee> listAll(
+            @QueryParam("page") @DefaultValue("0") int page,
+            @QueryParam("pageSize") @DefaultValue("5") int pageSize) {
+        PanacheQuery<Employee> query = Employee.findAll();
+        long totalRecords = query.count();
+        query.page(page, pageSize);
+        int totalPages = query.pageCount();
+
+        return new PaginatedResponse<>(
+                query.list(),
+                totalRecords,
+                page,
+                pageSize,
+                totalPages,
+                page < totalPages - 1 ? page + 1 : null,
+                page > 0 && totalPages > 0 ? page - 1 : null);
     }
 
     @GET
