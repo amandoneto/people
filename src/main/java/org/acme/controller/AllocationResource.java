@@ -1,6 +1,8 @@
 package org.acme.controller;
 
+import io.quarkus.security.Authenticated;
 import org.acme.model.Allocation;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -11,15 +13,18 @@ import java.util.UUID;
 @Path("/api/allocations")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
+@Authenticated
 public class AllocationResource {
 
     @GET
+    @RolesAllowed({ "admin", "user" })
     public List<Allocation> listAll() {
         return Allocation.listAll();
     }
 
     @GET
     @Path("/{id}")
+    @RolesAllowed({ "admin", "user" })
     public Response getById(@PathParam("id") UUID id) {
         Allocation allocation = Allocation.findById(id);
         if (allocation == null) {
@@ -29,6 +34,7 @@ public class AllocationResource {
     }
 
     @POST
+    @RolesAllowed("admin")
     @Transactional
     public Response create(Allocation allocation) {
         allocation.id = null;
@@ -38,6 +44,7 @@ public class AllocationResource {
 
     @PUT
     @Path("/{id}")
+    @RolesAllowed({ "admin", "user" })
     @Transactional
     public Response update(@PathParam("id") UUID id, Allocation updatedAllocation) {
         Allocation allocation = Allocation.findById(id);
@@ -56,6 +63,7 @@ public class AllocationResource {
 
     @DELETE
     @Path("/{id}")
+    @RolesAllowed("admin")
     @Transactional
     public Response delete(@PathParam("id") UUID id) {
         boolean deleted = Allocation.deleteById(id);

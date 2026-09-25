@@ -7,6 +7,7 @@ import org.acme.model.Employee;
 import org.acme.model.EmployeeSkill;
 import org.acme.model.EmployeeSkillId;
 import org.acme.model.Skill;
+import org.acme.service.AuthenticationService;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -56,6 +57,7 @@ class EmployeeSkillRepositoryTest {
         employee.email = "repository." + suffix + "@example.com";
         employee.role = "Developer";
         employee.seniority = "Senior";
+        employee.password = AuthenticationService.hashPassword("TestPassword123!");
         employee.persist();
         return employee;
     }

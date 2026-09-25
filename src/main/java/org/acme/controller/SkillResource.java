@@ -1,8 +1,10 @@
 package org.acme.controller;
 
+import io.quarkus.security.Authenticated;
 import org.acme.dto.PaginatedResponse;
 import org.acme.model.Skill;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -13,9 +15,11 @@ import java.util.UUID;
 @Path("/api/skills")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
+@Authenticated
 public class SkillResource {
 
     @GET
+    @RolesAllowed({ "admin", "user" })
     public PaginatedResponse<Skill> listAll(
             @QueryParam("page") @DefaultValue("0") int page,
             @QueryParam("pageSize") @DefaultValue("5") int pageSize) {
@@ -36,6 +40,7 @@ public class SkillResource {
 
     @GET
     @Path("/{id}")
+    @RolesAllowed({ "admin", "user" })
     public Response getById(@PathParam("id") UUID id) {
         Skill skill = Skill.findById(id);
         if (skill == null) {
@@ -45,6 +50,7 @@ public class SkillResource {
     }
 
     @POST
+    @RolesAllowed("admin")
     @Transactional
     public Response create(Skill skill) {
         skill.id = null;
@@ -55,6 +61,7 @@ public class SkillResource {
     @POST
     @Transactional
     @Path("/list")
+    @RolesAllowed("admin")
     public Response create(List<Skill> skills) {
 
         Skill.persist(skills);
@@ -63,6 +70,7 @@ public class SkillResource {
 
     @PUT
     @Path("/{id}")
+    @RolesAllowed({ "admin", "user" })
     @Transactional
     public Response update(@PathParam("id") UUID id, Skill updatedSkill) {
         Skill skill = Skill.findById(id);
@@ -78,6 +86,7 @@ public class SkillResource {
 
     @DELETE
     @Path("/{id}")
+    @RolesAllowed("admin")
     @Transactional
     public Response delete(@PathParam("id") UUID id) {
         boolean deleted = Skill.deleteById(id);

@@ -1,6 +1,7 @@
 package org.acme.controller;
 
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.security.TestSecurity;
 import io.restassured.http.ContentType;
 import org.junit.jupiter.api.Test;
 
@@ -16,6 +17,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 
 @QuarkusTest
+@TestSecurity(user = "test-admin", roles = "admin")
 class EmployeeResourceTest {
 
         @Test
@@ -27,6 +29,7 @@ class EmployeeResourceTest {
                         payload.put("email", "pagination.employee." + unique + "@example.com");
                         payload.put("role", "Developer");
                         payload.put("seniority", "Junior");
+                        payload.put("password", "TestPassword123!");
 
                         given()
                                         .contentType(ContentType.JSON)
@@ -83,6 +86,7 @@ class EmployeeResourceTest {
                 payload.put("email", "alice." + unique + "@example.com");
                 payload.put("role", "Developer");
                 payload.put("seniority", "Junior");
+                payload.put("password", "TestPassword123!");
 
                 String employeeId = given()
                                 .contentType(ContentType.JSON)
