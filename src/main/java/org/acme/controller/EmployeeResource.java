@@ -1,9 +1,13 @@
 package org.acme.controller;
 
+import io.quarkus.security.Authenticated;
 import org.acme.dto.PaginatedResponse;
 import org.acme.model.Employee;
+import org.acme.service.AuthenticationService;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -13,9 +17,11 @@ import java.util.UUID;
 @Path("/api/employees")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
+@Authenticated
 public class EmployeeResource {
 
     @GET
+    @RolesAllowed({ "admin", "user" })
     public PaginatedResponse<Employee> listAll(
             @QueryParam("page") @DefaultValue("0") int page,
             @QueryParam("pageSize") @DefaultValue("5") int pageSize) {
@@ -36,6 +42,7 @@ public class EmployeeResource {
 
     @GET
     @Path("/{id}")
+    @RolesAllowed({ "admin", "user" })
     public Response getById(@PathParam("id") UUID id) {
         Employee employee = Employee.findById(id);
         if (employee == null) {
@@ -45,9 +52,12 @@ public class EmployeeResource {
     }
 
     @POST
+    @RolesAllowed("admin")
     @Transactional
-    public Response create(Employee employee) {
+    public Response create(@Valid Employee employee) {
         employee.id = null; // Garante que o gerador de UUIDv7 atue
+        employee.email = employee.email.toLowerCase(java.util.Locale.ROOT);
+        employee.password = AuthenticationService.hashPassword(employee.password);
         employee.createdAt = LocalDateTime.now();
         employee.updatedAt = LocalDateTime.now();
         employee.persist();
@@ -56,6 +66,7 @@ public class EmployeeResource {
 
     @PUT
     @Path("/{id}")
+    @RolesAllowed({ "admin", "user" })
     @Transactional
     public Response update(@PathParam("id") UUID id, Employee updatedEmployee) {
         Employee employee = Employee.findById(id);
@@ -74,6 +85,7 @@ public class EmployeeResource {
 
     @DELETE
     @Path("/{id}")
+    @RolesAllowed("admin")
     @Transactional
     public Response delete(@PathParam("id") UUID id) {
         boolean deleted = Employee.deleteById(id);
