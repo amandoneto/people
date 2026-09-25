@@ -27,6 +27,9 @@ public class Employee extends PanacheEntityBase {
     @Column(nullable = false, length = 50)
     public String seniority;
 
+    @Column(name = "password", nullable = false, length = 255)
+    public String password;
+
     @Column(name = "created_at", updatable = false)
     public LocalDateTime createdAt = LocalDateTime.now();
 
