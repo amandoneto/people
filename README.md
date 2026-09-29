@@ -1,78 +1,106 @@
-# people
+# People
 
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
+People is a Quarkus-based backend application for managing employees, skills, projects, allocations, and authentication. The project exposes a REST API and uses PostgreSQL persistence with Hibernate ORM and JWT-based security.
 
-If you want to learn more about Quarkus, please visit its website: <https://quarkus.io/>.
+## Project overview
+
+- Framework: Quarkus 3.39.3
+- Language: Java
+- Java version: 21
+- Build tool: Gradle
+- Persistence: Hibernate ORM + Panache, PostgreSQL
+- API layer: REST endpoints with Jackson
+- Security: SmallRye JWT and Elytron security
+- Testing: JUnit, JUnit + REST Assured, H2 for tests
+
+## Architecture and features
+
+The application includes REST resources for:
+
+- Employees
+- Skills
+- Projects
+- Employee-to-skill mappings
+- Allocations
+- Authentication and login flow
+
+The backend follows a typical Quarkus layered design with:
+
+- Controller resources under `src/main/java/org/acme/controller`
+- Service layer for business logic
+- Repository layer for persistence access
+- DTOs and exception handling for API responses
+
+## Java and GraalVM version
+
+This project is configured for Java 21 in `build.gradle`:
+
+- `sourceCompatibility = JavaVersion.VERSION_21`
+- `targetCompatibility = JavaVersion.VERSION_21`
+
+The repository does not explicitly pin a GraalVM version in the Gradle config. For native-image builds, use a GraalVM distribution compatible with Java 21, typically GraalVM for JDK 21. This matches the project’s Java target and Quarkus 3.39.3 native build compatibility.
+
+## Prerequisites
+
+- JDK 21
+- GraalVM for JDK 21 if you plan to build a native executable
+- PostgreSQL running locally or reachable from the app configuration
+- Gradle wrapper included in the repo
 
 ## Running the application in dev mode
 
-You can run your application in dev mode that enables live coding using:
-
-```shell script
+```bash
 ./gradlew quarkusDev
 ```
 
-> **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at <http://localhost:8080/q/dev/>.
+Quarkus Dev UI is available at:
 
-## Packaging and running the application
+- http://localhost:8080/q/dev/
 
-The application can be packaged using:
+## Building and running the application
 
-```shell script
+Build the project:
+
+```bash
 ./gradlew build
 ```
 
-It produces the `quarkus-run.jar` file in the `build/quarkus-app/` directory.
-Be aware that it’s not an _über-jar_ as the dependencies are copied into the `build/quarkus-app/lib/` directory.
+This generates the runnable application under `build/quarkus-app/`.
 
-The application is now runnable using `java -jar build/quarkus-app/quarkus-run.jar`.
+Run it with:
 
-If you want to build an _über-jar_, execute the following command:
-
-```shell script
-./gradlew build -Dquarkus.package.jar.type=uber-jar
+```bash
+java -jar build/quarkus-app/quarkus-run.jar
 ```
 
-The application, packaged as an _über-jar_, is now runnable using `java -jar build/*-runner.jar`.
+## Native executable build
 
-## Creating a native executable
+Create a native executable with:
 
-You can create a native executable using:
-
-```shell script
-./gradlew build -Dquarkus.native.enabled=true
+```bash
+./gradlew build -Dquarkus.native.enabled=true -Dquarkus.package.jar.enabled=false
 ```
 
-Or, if you don't have GraalVM installed, you can run the native executable build in a container using:
+If GraalVM is not installed locally, you can use a containerized native build:
 
-```shell script
-./gradlew build -Dquarkus.native.enabled=true -Dquarkus.native.container-build=true
+```bash
+./gradlew build -Dquarkus.native.enabled=true -Dquarkus.package.jar.enabled=false -Dquarkus.native.container-build=true
 ```
 
-You can then execute your native executable with: `./build/people-1.0.0-SNAPSHOT-runner`
+The generated native runner will be placed in `build/` and can be started with:
 
-If you want to learn more about building native executables, please consult <https://quarkus.io/guides/gradle-tooling>.
+```bash
+./build/people-1.0.0-SNAPSHOT-runner
+```
 
-## Related Guides
+## Useful references
 
-- REST ([guide](https://quarkus.io/guides/rest)): Build RESTful web services and APIs using Jakarta REST (formerly JAX-RS)
-- Hibernate ORM with Panache ([guide](https://quarkus.io/guides/hibernate-orm-panache)): Simplified JPA/Hibernate data access layer with active record and repository patterns
-- JDBC Driver - PostgreSQL ([guide](https://quarkus.io/guides/datasource)): Connect to the PostgreSQL database via JDBC
+- Quarkus: https://quarkus.io/
+- Quarkus REST: https://quarkus.io/guides/rest
+- Hibernate ORM with Panache: https://quarkus.io/guides/hibernate-orm-panache
+- PostgreSQL datasource guide: https://quarkus.io/guides/datasource
+- Gradle tooling guide: https://quarkus.io/guides/gradle-tooling
 
-## Provided Code
+## Notes
 
-### Hibernate ORM
-
-Create your first JPA entity
-
-[Related guide section...](https://quarkus.io/guides/hibernate-orm)
-
-
-[Related Hibernate with Panache section...](https://quarkus.io/guides/hibernate-orm-panache)
-
-
-### REST
-
-Easily start your REST Web Services
-
-[Related guide section...](https://quarkus.io/guides/getting-started-reactive#reactive-jax-rs-resources)
+This project is a backend service and is primarily intended to be run as a local Quarkus application or packaged native binary. Configuration values, such as datasource and security settings, are expected to be supplied through Quarkus configuration files and environment variables.
