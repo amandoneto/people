@@ -1,11 +1,11 @@
 package org.acme.model;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.validation.constraints.NotBlank;
 import org.hibernate.annotations.UuidGenerator;
 import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 @Entity
@@ -29,14 +29,17 @@ public class Employee extends PanacheEntityBase {
     @Column(nullable = false, length = 50)
     public String seniority;
 
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    @NotBlank
-    @Column(name = "password", nullable = false, length = 255)
-    public String password;
-
     @Column(name = "created_at", updatable = false)
     public LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(name = "updated_at")
     public LocalDateTime updatedAt = LocalDateTime.now();
+
+    @Column(name = "version", nullable = false)
+    @JsonIgnore
+    public long version;
+
+    @Column(name = "deleted_at")
+    @JsonIgnore
+    public Instant deletedAt;
 }

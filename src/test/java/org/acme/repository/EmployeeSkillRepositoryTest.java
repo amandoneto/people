@@ -7,7 +7,8 @@ import org.acme.model.Employee;
 import org.acme.model.EmployeeSkill;
 import org.acme.model.EmployeeSkillId;
 import org.acme.model.Skill;
-import org.acme.service.AuthenticationService;
+import org.acme.dto.EmployeeCreateRequest;
+import org.acme.service.EmployeeService;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -24,6 +25,9 @@ class EmployeeSkillRepositoryTest {
 
     @Inject
     EmployeeSkillRepository repository;
+
+    @Inject
+    EmployeeService employeeService;
 
     @Test
     @Transactional
@@ -52,14 +56,12 @@ class EmployeeSkillRepositoryTest {
     }
 
     private Employee createEmployee(String suffix) {
-        Employee employee = new Employee();
-        employee.name = "Repository Employee " + suffix;
-        employee.email = "repository." + suffix + "@example.com";
-        employee.role = "Developer";
-        employee.seniority = "Senior";
-        employee.password = AuthenticationService.hashPassword("TestPassword123!");
-        employee.persist();
-        return employee;
+        return employeeService.create(new EmployeeCreateRequest(
+                "Repository Employee " + suffix,
+                "repository." + suffix + "@example.com",
+                "Developer",
+                "Senior",
+                "TestPassword123!"));
     }
 
     private Skill createSkill(String suffix) {

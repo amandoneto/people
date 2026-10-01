@@ -3,9 +3,9 @@ package org.acme.controller;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import jakarta.inject.Inject;
-import jakarta.transaction.UserTransaction;
+import org.acme.dto.EmployeeCreateRequest;
 import org.acme.model.Employee;
-import org.acme.service.AuthenticationService;
+import org.acme.service.EmployeeService;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -16,18 +16,17 @@ import static io.restassured.RestAssured.given;
 class RealJwtAuthenticationTest {
 
     @Inject
-    UserTransaction userTransaction;
+    EmployeeService employeeService;
 
     @Test
     void issuedTokenAuthenticatesAgainstProtectedResource() {
         String unique = String.valueOf(System.nanoTime());
-        Employee employee = new Employee();
-        employee.name = "Real JWT User";
-        employee.email = "real.jwt." + unique + "@example.com";
-        employee.role = "admin";
-        employee.seniority = "Senior";
-        employee.password = AuthenticationService.hashPassword("TestPassword123!");
-        persist(employee);
+        Employee employee = employeeService.create(new EmployeeCreateRequest(
+                "Real JWT User",
+                "real.jwt." + unique + "@example.com",
+                "admin",
+                "Senior",
+                "TestPassword123!"));
 
         String token = given()
                 .contentType(ContentType.JSON)
@@ -47,38 +46,6 @@ class RealJwtAuthenticationTest {
                 .statusCode(200)
                 .body("data", org.hamcrest.Matchers.notNullValue());
 
-        delete(employee.email);
-    }
-
-    private void persist(Employee employee) {
-        try {
-            userTransaction.begin();
-            employee.persistAndFlush();
-            userTransaction.commit();
-        } catch (Exception exception) {
-            rollback();
-            throw new IllegalStateException("Unable to persist test employee", exception);
-        }
-    }
-
-    private void delete(String email) {
-        try {
-            userTransaction.begin();
-            Employee.delete("email", email);
-            userTransaction.commit();
-        } catch (Exception exception) {
-            rollback();
-            throw new IllegalStateException("Unable to delete test employee", exception);
-        }
-    }
-
-    private void rollback() {
-        try {
-            if (userTransaction.getStatus() != jakarta.transaction.Status.STATUS_NO_TRANSACTION) {
-                userTransaction.rollback();
-            }
-        } catch (Exception ignored) {
-            // Preserve the original test failure.
-        }
+        employeeService.delete(employee.id);
     }
 }
