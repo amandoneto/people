@@ -26,7 +26,8 @@ public class EmployeeSkillRepository implements PanacheRepository<EmployeeSkill>
         return find(
                 "select distinct es from EmployeeSkill es "
                         + "join fetch es.skill "
-                        + "join fetch es.employee")
+                        + "join fetch es.employee "
+                        + "where es.employee.deletedAt is null")
                 .list();
     }
 
@@ -46,7 +47,8 @@ public class EmployeeSkillRepository implements PanacheRepository<EmployeeSkill>
                 "select distinct es from EmployeeSkill es "
                         + "join fetch es.skill "
                         + "join fetch es.employee "
-                        + "where es.skill.name in ?1",
+                        + "where es.employee.deletedAt is null "
+                        + "and es.skill.name in ?1",
                 skillNames)
                 .list();
     }
@@ -58,7 +60,7 @@ public class EmployeeSkillRepository implements PanacheRepository<EmployeeSkill>
      * @return the employee, or {@code null} when it does not exist
      */
     public Employee findEmployeeById(UUID employeeId) {
-        return Employee.findById(employeeId);
+        return Employee.find("id = ?1 and deletedAt is null", employeeId).firstResult();
     }
 
     /**

@@ -1,0 +1,1 @@
+ALTER TABLE talent.tb_employee DROP COLUMN password;
