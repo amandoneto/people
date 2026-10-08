@@ -1,7 +1,9 @@
 package org.acme.repository;
 
-import io.quarkus.hibernate.orm.panache.PanacheRepository;
+import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
 import org.acme.model.Employee;
 import org.acme.model.EmployeeSkill;
 import org.acme.model.EmployeeSkillId;
@@ -14,7 +16,10 @@ import java.util.UUID;
  * Provides persistence operations for employee-skill associations.
  */
 @ApplicationScoped
-public class EmployeeSkillRepository implements PanacheRepository<EmployeeSkill> {
+public class EmployeeSkillRepository implements PanacheRepositoryBase<EmployeeSkill, EmployeeSkillId> {
+
+    @Inject
+    EntityManager entityManager;
 
     /**
      * Lists associations with their employee and skill relationships initialized.
@@ -60,7 +65,8 @@ public class EmployeeSkillRepository implements PanacheRepository<EmployeeSkill>
      * @return the employee, or {@code null} when it does not exist
      */
     public Employee findEmployeeById(UUID employeeId) {
-        return Employee.find("id = ?1 and deletedAt is null", employeeId).firstResult();
+        Employee employee = entityManager.find(Employee.class, employeeId);
+        return employee != null && employee.deletedAt == null ? employee : null;
     }
 
     /**
@@ -70,7 +76,7 @@ public class EmployeeSkillRepository implements PanacheRepository<EmployeeSkill>
      * @return the skill, or {@code null} when it does not exist
      */
     public Skill findSkillById(UUID skillId) {
-        return Skill.findById(skillId);
+        return entityManager.find(Skill.class, skillId);
     }
 
     /**

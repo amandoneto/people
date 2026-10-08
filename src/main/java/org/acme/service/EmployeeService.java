@@ -5,17 +5,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.LockModeType;
 import jakarta.transaction.Transactional;
 import org.acme.dto.EmployeeCreateRequest;
 import org.acme.dto.EmployeeUpdateRequest;
+import org.acme.dto.PaginatedResponse;
 import org.acme.model.Employee;
 import org.acme.model.EmployeeCredential;
 import org.acme.model.EmployeeEvent;
 import org.acme.model.EmployeeEventPayload;
 import org.acme.repository.EmployeeCredentialRepository;
 import org.acme.repository.EmployeeEventRepository;
+import org.acme.repository.EmployeeRepository;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -31,10 +31,10 @@ public class EmployeeService {
     };
 
     @Inject
-    EntityManager entityManager;
+    EmployeeEventRepository eventRepository;
 
     @Inject
-    EmployeeEventRepository eventRepository;
+    EmployeeRepository employeeRepository;
 
     @Inject
     EmployeeCredentialRepository credentialRepository;
@@ -54,8 +54,8 @@ public class EmployeeService {
         employee.seniority = request.seniority();
         employee.createdAt = LocalDateTime.now();
         employee.updatedAt = employee.createdAt;
-        entityManager.persist(employee);
-        entityManager.flush();
+        employeeRepository.persist(employee);
+        employeeRepository.flush();
 
         EmployeeCredential credential = new EmployeeCredential();
         credential.employeeId = employee.id;
@@ -63,13 +63,13 @@ public class EmployeeService {
         credentialRepository.persist(credential);
 
         appendEvent(employee, "EmployeeCreated", null);
-        entityManager.flush();
+        employeeRepository.flush();
         return employee;
     }
 
     @Transactional
     public Employee update(UUID employeeId, EmployeeUpdateRequest request) {
-        Employee employee = entityManager.find(Employee.class, employeeId, LockModeType.PESSIMISTIC_WRITE);
+        Employee employee = employeeRepository.findByIdForUpdate(employeeId);
         if (employee == null || employee.deletedAt != null) {
             return null;
         }
@@ -80,20 +80,20 @@ public class EmployeeService {
         employee.seniority = request.seniority();
         employee.updatedAt = LocalDateTime.now();
         appendEvent(employee, "EmployeeProfileUpdated", null);
-        entityManager.flush();
+        employeeRepository.flush();
         return employee;
     }
 
     @Transactional
     public boolean delete(UUID employeeId) {
-        Employee employee = entityManager.find(Employee.class, employeeId, LockModeType.PESSIMISTIC_WRITE);
+        Employee employee = employeeRepository.findByIdForUpdate(employeeId);
         if (employee == null || employee.deletedAt != null) {
             return false;
         }
 
         employee.deletedAt = Instant.now();
         appendEvent(employee, "EmployeeDeleted", employee.deletedAt);
-        entityManager.flush();
+        employeeRepository.flush();
         return true;
     }
 
@@ -140,7 +140,7 @@ public class EmployeeService {
 
     @Transactional
     public boolean rebuildProjection(UUID employeeId) {
-        Employee employee = entityManager.find(Employee.class, employeeId, LockModeType.PESSIMISTIC_WRITE);
+        Employee employee = employeeRepository.findByIdForUpdate(employeeId);
         if (employee == null) {
             return false;
         }
@@ -159,8 +159,21 @@ public class EmployeeService {
         employee.updatedAt = state.updatedAt();
         employee.deletedAt = state.deletedAt();
         employee.version = replay.version();
-        entityManager.flush();
+        employeeRepository.flush();
         return true;
+    }
+
+    public PaginatedResponse<Employee> listAll(int page, int pageSize) {
+        long totalRecords = employeeRepository.countActive();
+        return PaginatedResponse.of(
+                employeeRepository.findActivePage(page, pageSize),
+                totalRecords,
+                page,
+                pageSize);
+    }
+
+    public Employee getActiveById(UUID employeeId) {
+        return employeeRepository.findActiveById(employeeId);
     }
 
     private void appendEvent(Employee employee, String eventType, Instant deletedAt) {

@@ -1,11 +1,10 @@
 package org.acme.model;
 
-import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import jakarta.persistence.*;
 
 @Entity
 @Table(name = "tb_employee_skill", schema = "talent")
-public class EmployeeSkill extends PanacheEntityBase {
+public class EmployeeSkill {
 
     @EmbeddedId
     public EmployeeSkillId id = new EmployeeSkillId();

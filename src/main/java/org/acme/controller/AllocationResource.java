@@ -2,8 +2,9 @@ package org.acme.controller;
 
 import io.quarkus.security.Authenticated;
 import org.acme.model.Allocation;
+import org.acme.service.AllocationService;
+import jakarta.inject.Inject;
 import jakarta.annotation.security.RolesAllowed;
-import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -16,17 +17,20 @@ import java.util.UUID;
 @Authenticated
 public class AllocationResource {
 
+    @Inject
+    AllocationService allocationService;
+
     @GET
     @RolesAllowed({ "admin", "user" })
     public List<Allocation> listAll() {
-        return Allocation.listAll();
+        return allocationService.listAll();
     }
 
     @GET
     @Path("/{id}")
     @RolesAllowed({ "admin", "user" })
     public Response getById(@PathParam("id") UUID id) {
-        Allocation allocation = Allocation.findById(id);
+        Allocation allocation = allocationService.getById(id);
         if (allocation == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
@@ -35,28 +39,19 @@ public class AllocationResource {
 
     @POST
     @RolesAllowed("admin")
-    @Transactional
     public Response create(Allocation allocation) {
-        allocation.id = null;
-        allocation.persist();
-        return Response.status(Response.Status.CREATED).entity(allocation).build();
+        Allocation created = allocationService.create(allocation);
+        return Response.status(Response.Status.CREATED).entity(created).build();
     }
 
     @PUT
     @Path("/{id}")
     @RolesAllowed({ "admin", "user" })
-    @Transactional
     public Response update(@PathParam("id") UUID id, Allocation updatedAllocation) {
-        Allocation allocation = Allocation.findById(id);
+        Allocation allocation = allocationService.update(id, updatedAllocation);
         if (allocation == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-
-        allocation.employee = updatedAllocation.employee;
-        allocation.project = updatedAllocation.project;
-        allocation.allocationPercentage = updatedAllocation.allocationPercentage;
-        allocation.startDate = updatedAllocation.startDate;
-        allocation.endDate = updatedAllocation.endDate;
 
         return Response.ok(allocation).build();
     }
@@ -64,9 +59,8 @@ public class AllocationResource {
     @DELETE
     @Path("/{id}")
     @RolesAllowed("admin")
-    @Transactional
     public Response delete(@PathParam("id") UUID id) {
-        boolean deleted = Allocation.deleteById(id);
+        boolean deleted = allocationService.delete(id);
         if (!deleted) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }

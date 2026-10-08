@@ -31,6 +31,10 @@ The backend follows a typical Quarkus layered design with:
 - Repository layer for persistence access
 - DTOs and exception handling for API responses
 
+REST resources delegate request handling to services; services coordinate business
+operations through repositories. JPA entities under `model` contain mappings only,
+while Panache is used through the repository layer rather than the active-record pattern.
+
 ## Java and GraalVM version
 
 This project is configured for Java 21 in `build.gradle`:

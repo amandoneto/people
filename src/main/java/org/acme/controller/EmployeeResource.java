@@ -2,12 +2,11 @@ package org.acme.controller;
 
 import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
-import org.acme.dto.PaginatedResponse;
 import org.acme.dto.EmployeeCreateRequest;
 import org.acme.dto.EmployeeUpdateRequest;
+import org.acme.dto.PaginatedResponse;
 import org.acme.model.Employee;
 import org.acme.service.EmployeeService;
-import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.validation.Valid;
@@ -30,26 +29,14 @@ public class EmployeeResource {
     public PaginatedResponse<Employee> listAll(
             @QueryParam("page") @DefaultValue("0") int page,
             @QueryParam("pageSize") @DefaultValue("5") int pageSize) {
-        PanacheQuery<Employee> query = Employee.find("deletedAt is null");
-        long totalRecords = query.count();
-        query.page(page, pageSize);
-        int totalPages = query.pageCount();
-
-        return new PaginatedResponse<>(
-                query.list(),
-                totalRecords,
-                page,
-                pageSize,
-                totalPages,
-                page < totalPages - 1 ? page + 1 : null,
-                page > 0 && totalPages > 0 ? page - 1 : null);
+        return employeeService.listAll(page, pageSize);
     }
 
     @GET
     @Path("/{id}")
     @RolesAllowed({ "admin", "user" })
     public Response getById(@PathParam("id") UUID id) {
-        Employee employee = Employee.find("id = ?1 and deletedAt is null", id).firstResult();
+        Employee employee = employeeService.getActiveById(id);
         if (employee == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }

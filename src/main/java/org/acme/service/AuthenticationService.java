@@ -6,9 +6,9 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.acme.dto.LoginRequest;
-import org.acme.model.Employee;
 import org.acme.model.EmployeeCredential;
 import org.acme.repository.EmployeeCredentialRepository;
+import org.acme.repository.EmployeeRepository;
 
 import java.time.Duration;
 import java.util.Locale;
@@ -22,6 +22,9 @@ public class AuthenticationService {
     EmployeeCredentialRepository credentialRepository;
 
     @Inject
+    EmployeeRepository employeeRepository;
+
+    @Inject
     @ConfigProperty(name = "security.jwt.secret")
     private String jwtSecret;
 
@@ -32,8 +35,7 @@ public class AuthenticationService {
      */
 
     public Optional<String> authenticate(LoginRequest request) {
-        Employee employee = Employee.find("email = ?1 and deletedAt is null", request.email().toLowerCase(Locale.ROOT))
-                .firstResult();
+        var employee = employeeRepository.findActiveByEmail(request.email().toLowerCase(Locale.ROOT));
         if (employee == null) {
             return Optional.empty();
         }
