@@ -10,6 +10,7 @@ import org.acme.model.EmployeeCredential;
 import org.acme.model.EmployeeEvent;
 import org.acme.repository.EmployeeCredentialRepository;
 import org.acme.repository.EmployeeEventRepository;
+import org.acme.repository.EmployeeRepository;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -32,6 +33,9 @@ class EmployeeServiceTest {
 
     @Inject
     EmployeeCredentialRepository credentialRepository;
+
+    @Inject
+    EmployeeRepository employeeRepository;
 
     @Inject
     EntityManager entityManager;
@@ -67,7 +71,7 @@ class EmployeeServiceTest {
         assertEquals(3, replay.version());
         assertEquals("Updated Event Employee", replay.state().name());
         assertNotNull(replay.state().deletedAt());
-        assertNull(Employee.find("id = ?1 and deletedAt is null", employee.id).firstResult());
+        assertNull(employeeRepository.findActiveById(employee.id));
         assertTrue(service.rebuildProjection(employee.id));
         assertEquals(3, entityManager.find(Employee.class, employee.id).version);
     }

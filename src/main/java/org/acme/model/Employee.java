@@ -1,6 +1,5 @@
 package org.acme.model;
 
-import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import org.hibernate.annotations.UuidGenerator;
@@ -10,7 +9,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "tb_employee", schema = "talent")
-public class Employee extends PanacheEntityBase {
+public class Employee {
 
     @Id
     @UuidGenerator(style = UuidGenerator.Style.TIME) // Gera o UUIDv7 automaticamente

@@ -1,6 +1,5 @@
 package org.acme.model;
 
-import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -11,7 +10,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "tb_skill", schema = "talent")
-public class Skill extends PanacheEntityBase {
+public class Skill {
 
     @Id
     @UuidGenerator(style = UuidGenerator.Style.TIME)

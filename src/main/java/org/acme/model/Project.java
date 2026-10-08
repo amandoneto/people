@@ -1,6 +1,5 @@
 package org.acme.model;
 
-import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import jakarta.persistence.*;
 import org.hibernate.annotations.UuidGenerator;
 
@@ -9,7 +8,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "tb_project", schema = "talent")
-public class Project extends PanacheEntityBase {
+public class Project {
 
     @Id
     @UuidGenerator(style = UuidGenerator.Style.TIME)

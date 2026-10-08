@@ -29,6 +29,9 @@ class EmployeeSkillRepositoryTest {
     @Inject
     EmployeeService employeeService;
 
+    @Inject
+    SkillRepository skillRepository;
+
     @Test
     @Transactional
     void shouldFindEmployeeSkillsBySkillNames() {
@@ -68,7 +71,7 @@ class EmployeeSkillRepositoryTest {
         Skill skill = new Skill();
         skill.name = "Repository Skill " + suffix;
         skill.category = "Backend";
-        skill.persist();
+        skillRepository.persist(skill);
         return skill;
     }
 }

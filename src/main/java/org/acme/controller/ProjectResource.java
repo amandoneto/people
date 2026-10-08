@@ -2,15 +2,15 @@ package org.acme.controller;
 
 import io.quarkus.security.Authenticated;
 import org.acme.model.Project;
+import org.acme.service.ProjectService;
 import org.jboss.logging.Logger;
 
-import jakarta.transaction.Transactional;
+import jakarta.inject.Inject;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -23,11 +23,14 @@ public class ProjectResource {
     // Criação do logger padrão da classe
     private static final Logger LOG = Logger.getLogger(ProjectResource.class);
 
+    @Inject
+    ProjectService projectService;
+
     @GET
     @RolesAllowed({ "admin", "user" })
     public List<Project> listAll() {
         LOG.info("Searching all the projects...");
-        return Project.listAll();
+        return projectService.listAll();
     }
 
     @GET
@@ -35,7 +38,7 @@ public class ProjectResource {
     @RolesAllowed({ "admin", "user" })
     public Response getById(@PathParam("id") UUID id) {
         LOG.infov("Searching for project id {0}.", id);
-        Project project = Project.findById(id);
+        Project project = projectService.getById(id);
         if (project == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
@@ -44,30 +47,22 @@ public class ProjectResource {
 
     @POST
     @RolesAllowed("admin")
-    @Transactional
     public Response create(Project project) {
         LOG.info("Creating a project.");
-        project.id = null;
-        project.persist();
-        return Response.status(Response.Status.CREATED).entity(project).build();
+        Project created = projectService.create(project);
+        return Response.status(Response.Status.CREATED).entity(created).build();
     }
 
     @PUT
     @Path("/{id}")
     @RolesAllowed({ "admin", "user" })
-    @Transactional
     public Response update(@PathParam("id") UUID id, Project updatedProject) {
         LOG.infov("Updating project id {0}.", id);
 
-        Project project = Project.findById(id);
+        Project project = projectService.update(id, updatedProject);
         if (project == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-
-        project.name = updatedProject.name;
-        project.description = updatedProject.description;
-        project.status = updatedProject.status;
-        project.updatedAt = LocalDateTime.now();
 
         return Response.ok(project).build();
     }
@@ -75,10 +70,9 @@ public class ProjectResource {
     @DELETE
     @Path("/{id}")
     @RolesAllowed("admin")
-    @Transactional
     public Response delete(@PathParam("id") UUID id) {
         LOG.infov("Deleting project id {0}.", id);
-        boolean deleted = Project.deleteById(id);
+        boolean deleted = projectService.delete(id);
         if (!deleted) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
