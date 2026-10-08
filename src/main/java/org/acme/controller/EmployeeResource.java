@@ -8,6 +8,7 @@ import org.acme.dto.EmployeeUpdateRequest;
 import org.acme.model.Employee;
 import org.acme.service.EmployeeService;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
+import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
@@ -56,7 +57,7 @@ public class EmployeeResource {
     }
 
     @POST
-    @RolesAllowed("admin")
+    @PermitAll
     public Response create(@Valid EmployeeCreateRequest request) {
         Employee employee = employeeService.create(request);
         return Response.status(Response.Status.CREATED).entity(employee).build();

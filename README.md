@@ -57,6 +57,14 @@ Quarkus Dev UI is available at:
 
 - http://localhost:8080/q/dev/
 
+## CORS
+
+The API allows requests from the local Angular development origin `http://localhost:4200`.
+For a deployed frontend, set `CORS_ORIGINS` to its exact origin or a comma-separated list of
+exact origins (for example, `https://people.example.com`). Avoid wildcard origins for this
+authenticated API. CORS allows the `GET`, `POST`, `PUT`, and `DELETE` methods and the
+`Accept`, `Authorization`, and `Content-Type` headers.
+
 ## Building and running the application
 
 Build the project:
