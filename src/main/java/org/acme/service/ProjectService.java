@@ -32,6 +32,24 @@ public class ProjectService {
     }
 
     @Transactional
+    public Project createOrUpdate(Project project) {
+        if (project.id != null) {
+            Project existingProject = repository.findById(project.id);
+            if (existingProject != null) {
+                existingProject.name = project.name;
+                existingProject.description = project.description;
+                existingProject.status = project.status;
+                existingProject.updatedAt = LocalDateTime.now();
+                return existingProject;
+            }
+        }
+
+        project.id = null;
+        repository.persist(project);
+        return project;
+    }
+
+    @Transactional
     public Project update(UUID id, Project updatedProject) {
         Project project = repository.findById(id);
         if (project == null) {

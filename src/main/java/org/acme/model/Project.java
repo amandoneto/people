@@ -21,7 +21,7 @@ public class Project {
     @Column(columnDefinition = "TEXT")
     public String description;
 
-    // PLANNING, ACTIVE, COMPLETED
+    // PLANNING, ACTIVE, COMPLETED, CANCELLED
     @Column(nullable = false, length = 30)
     public String status;
 

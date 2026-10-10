@@ -35,6 +35,30 @@ REST resources delegate request handling to services; services coordinate busine
 operations through repositories. JPA entities under `model` contain mappings only,
 while Panache is used through the repository layer rather than the active-record pattern.
 
+## Kafka messaging
+
+Administrators can submit project JSON to `/api/kafka/projects`. The endpoint validates
+the request and publishes it to Kafka topic `project_topic`; the consumer validates the
+message and creates or updates the project. If `id` matches an existing project, that
+project is updated. If `id` is omitted or does not match an existing project, a new
+project is created. The broker bootstrap address is configured as `localhost:9092` in
+`src/main/resources/application.properties`.
+
+Project names may contain letters and spaces. Descriptions may contain letters, digits,
+punctuation, and spaces. Status must be `PLANNING`, `ACTIVE`, `COMPLETED`, or `CANCELLED`.
+Send a request with an administrator JWT:
+
+```bash
+curl -X POST http://localhost:8080/api/kafka/projects \
+  -H "Authorization: Bearer <admin-jwt>" \
+  -H "Content-Type: application/json" \
+  --data '{"name":"Project Alpha","description":"A new project for 2026.","status":"PLANNING"}'
+```
+
+The endpoint returns `202 Accepted` when Kafka acknowledges the message. The consumer
+listens on the same topic using consumer group `people-project-consumer`. The topic must
+exist unless Kafka topic auto-creation is enabled.
+
 ## Java and GraalVM version
 
 This project is configured for Java 21 in `build.gradle`:
