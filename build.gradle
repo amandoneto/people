@@ -20,6 +20,7 @@ dependencies {
     implementation 'io.quarkus:quarkus-smallrye-jwt'
     implementation 'io.quarkus:quarkus-smallrye-jwt-build'
     implementation 'io.quarkus:quarkus-elytron-security-common'
+    implementation 'io.quarkus:quarkus-messaging-kafka'
     testImplementation 'io.quarkus:quarkus-junit'
     testImplementation 'io.quarkus:quarkus-jacoco'
     testImplementation 'io.quarkus:quarkus-test-security'
