@@ -1,7 +1,6 @@
 package org.acme.model;
 
 import jakarta.persistence.*;
-import org.hibernate.annotations.UuidGenerator;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -11,7 +10,6 @@ import java.util.UUID;
 public class Project {
 
     @Id
-    @UuidGenerator(style = UuidGenerator.Style.TIME)
     @Column(name = "id", updatable = false, nullable = false)
     public UUID id;
 

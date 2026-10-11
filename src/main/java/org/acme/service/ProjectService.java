@@ -8,6 +8,7 @@ import org.acme.repository.ProjectRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @ApplicationScoped
@@ -26,7 +27,7 @@ public class ProjectService {
 
     @Transactional
     public Project create(Project project) {
-        project.id = null;
+        project.id = UUID.randomUUID();
         repository.persist(project);
         return project;
     }
@@ -44,7 +45,31 @@ public class ProjectService {
             }
         }
 
-        project.id = null;
+        project.id = UUID.randomUUID();
+        repository.persist(project);
+        return project;
+    }
+
+    @Transactional
+    public Project upsertFromMessage(Project project) {
+        if (project.id == null) {
+            throw new IllegalArgumentException("A project message must include a stable project ID.");
+        }
+
+        Project existingProject = repository.findById(project.id);
+        if (existingProject != null) {
+            boolean changed = !existingProject.name.equals(project.name)
+                    || !Objects.equals(existingProject.description, project.description)
+                    || !existingProject.status.equals(project.status);
+            if (changed) {
+                existingProject.name = project.name;
+                existingProject.description = project.description;
+                existingProject.status = project.status;
+                existingProject.updatedAt = LocalDateTime.now();
+            }
+            return existingProject;
+        }
+
         repository.persist(project);
         return project;
     }

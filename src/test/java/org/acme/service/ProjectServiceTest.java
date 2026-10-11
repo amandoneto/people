@@ -4,6 +4,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import org.acme.model.Project;
+import org.acme.repository.ProjectRepository;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
@@ -17,6 +18,9 @@ class ProjectServiceTest {
 
     @Inject
     ProjectService service;
+
+    @Inject
+    ProjectRepository repository;
 
     @Test
     @Transactional
@@ -57,5 +61,29 @@ class ProjectServiceTest {
 
         assertNotNull(createdProject.id);
         assertNotEquals(suppliedId, createdProject.id);
+    }
+
+    @Test
+    @Transactional
+    void replayingKafkaMessageUpsertsTheSameProject() {
+        UUID projectId = UUID.randomUUID();
+        Project messageProject = new Project();
+        messageProject.id = projectId;
+        messageProject.name = "Kafka Project";
+        messageProject.description = "Processed from Kafka";
+        messageProject.status = "PLANNING";
+
+        Project firstResult = service.upsertFromMessage(messageProject);
+        Project replay = new Project();
+        replay.id = projectId;
+        replay.name = "Kafka Project";
+        replay.description = "Processed from Kafka";
+        replay.status = "PLANNING";
+        Project replayResult = service.upsertFromMessage(replay);
+
+        assertEquals(projectId, firstResult.id);
+        assertEquals(projectId, replayResult.id);
+        assertEquals(firstResult.updatedAt, replayResult.updatedAt);
+        assertEquals(1, repository.count("id", projectId));
     }
 }
