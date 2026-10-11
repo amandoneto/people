@@ -12,6 +12,7 @@ import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
@@ -40,6 +41,25 @@ public class KafkaMessageResource {
                     ErrorResponse error = new ErrorResponse(
                             Response.Status.SERVICE_UNAVAILABLE.getStatusCode(),
                             "Unable to publish project. Kafka topic 'project_topic' may not exist or the broker is unavailable.");
+                    return Response.status(Response.Status.SERVICE_UNAVAILABLE)
+                            .entity(error)
+                            .build();
+                });
+    }
+
+    @PUT
+    @Path("/update")
+    @RolesAllowed("admin")
+    public CompletionStage<Response> publishUpdate(@Valid ProjectDTO project) {
+
+        return producer.send(project)
+                .thenApply(ignored -> Response.accepted().build())
+                .exceptionally(exception -> {
+                    LOG.error("Failed to publish project update to Kafka topic 'project_topic'. "
+                            + "Verify the topic exists and the Kafka broker is reachable.", exception);
+                    ErrorResponse error = new ErrorResponse(
+                            Response.Status.SERVICE_UNAVAILABLE.getStatusCode(),
+                            "Unable to publish project update. Kafka topic 'project_topic' may not exist or the broker is unavailable.");
                     return Response.status(Response.Status.SERVICE_UNAVAILABLE)
                             .entity(error)
                             .build();

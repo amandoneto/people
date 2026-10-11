@@ -51,7 +51,11 @@ public class KafkaMessageConsumer {
             throw new ConstraintViolationException("Invalid project message.", violations);
         }
 
-        Project project = projectService.createOrUpdate(projectDTO.toProject());
+        if (projectDTO.id() == null) {
+            throw new IllegalArgumentException("Project message must contain a stable project ID.");
+        }
+
+        Project project = projectService.upsertFromMessage(projectDTO.toProject());
         LOG.infov("Created or updated project {0}.", project.id);
     }
 }

@@ -59,6 +59,17 @@ The endpoint returns `202 Accepted` when Kafka acknowledges the message. The con
 listens on the same topic using consumer group `people-project-consumer`. The topic must
 exist unless Kafka topic auto-creation is enabled.
 
+If a publish fails, the producer retries up to three times after the initial attempt with
+exponential backoff (starting at 1 second and capped at 4 seconds). Each Kafka delivery
+attempt times out after 15 seconds; after all attempts fail, the endpoint returns
+`503 Service Unavailable`. Kafka producer and consumer connections also use a capped
+reconnect backoff while the broker is unavailable. Retry counts and backoff durations can
+be overridden with `kafka.project.publish.max-retries`,
+`kafka.project.publish.retry.initial-delay`, and
+`kafka.project.publish.retry.max-delay`. For requests without a project ID, the producer
+assigns one before sending so every retry uses the same ID; this lets the consumer's
+existing upsert behavior avoid duplicate projects if a delivery acknowledgement is lost.
+
 ## Java and GraalVM version
 
 This project is configured for Java 21 in `build.gradle`:

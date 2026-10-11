@@ -46,7 +46,7 @@ public class AuthenticationService {
 
         String role = employee.role.toLowerCase(Locale.ROOT);
         String token = Jwt.issuer("people-api")
-                .expiresIn(Duration.ofMinutes(15))
+                .expiresIn(Duration.ofMinutes(60))
                 .subject(employee.id.toString())
                 .upn(employee.email)
                 .claim("id", employee.id.toString())
