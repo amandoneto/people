@@ -151,3 +151,52 @@ The generated native runner will be placed in `build/` and can be started with:
 ## Notes
 
 This project is a backend service and is primarily intended to be run as a local Quarkus application or packaged native binary. Configuration values, such as datasource and security settings, are expected to be supplied through Quarkus configuration files and environment variables.
+
+## Kafka
+image: apache/kafka:latest: Pulls the official Apache Kafka image, which comes pre-configured with the shell scripts and binaries needed to interact with Kafka.
+
+ports: - "9092:9092": Maps port 9092 from inside the Docker container to port 9092 on your host machine. This allows any application running on your host (or tools like DBeaver/Offset Explorer) to talk directly to Kafka.
+
+KAFKA_NODE_ID: In Kafka clusters, every broker needs a unique integer ID. Since we are running one node, we assign it 1.
+
+KAFKA_PROCESS_ROLES: 'broker,controller': In KRaft mode, Kafka nodes take on roles. By setting both broker (stores and serves message logs) and controller (manages cluster metadata instead of ZooKeeper), our single container is fully self-contained.
+
+KAFKA_LISTENERS vs. KAFKA_ADVERTISED_LISTENERS:
+
+LISTENERS tells Kafka which network interfaces and ports to bind to inside the container (0.0.0.0:9092).
+
+ADVERTISED_LISTENERS tells Kafka what address to advertise back to clients when they connect. Because Docker abstracts networking, clients outside the container connect via localhost:9092.
+
+## Command
+# Start the Container
+- docker compose up -d
+
+# You can verify that the container is running smoothly by checking the logs:
+- docker logs -f kafka-people-node
+
+# Create a Topic
+docker exec -it kafka-people-node /opt/kafka/bin/kafka-topics.sh \
+  --create \
+  --topic project-topic \
+  --bootstrap-server localhost:9092 \
+  --partitions 1 \
+  --replication-factor 1
+
+# Start a Producer (Write Messages)
+docker exec -it kafka-people-node /opt/kafka/bin/kafka-console-producer.sh \
+  --topic project-topic \
+  --bootstrap-server localhost:9092
+
+
+# Start a Consumer (Read Messages)
+docker exec -it kafka-people-node /opt/kafka/bin/kafka-console-consumer.sh \
+  --topic project-topic \
+  --bootstrap-server localhost:9092 \
+  --from-beginning
+
+# Stop / Start
+docker compose stop
+docker compose start
+
+# To completely wipe the container and start fresh:
+docker compose down
