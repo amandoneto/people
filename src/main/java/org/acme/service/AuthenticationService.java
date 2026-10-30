@@ -6,6 +6,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.acme.dto.LoginRequest;
+import org.acme.dto.LoginResponse;
 import org.acme.model.EmployeeCredential;
 import org.acme.repository.EmployeeCredentialRepository;
 import org.acme.repository.EmployeeRepository;
@@ -34,7 +35,7 @@ public class AuthenticationService {
      * }
      */
 
-    public Optional<String> authenticate(LoginRequest request) {
+    public Optional<LoginResponse> authenticate(LoginRequest request) {
         var employee = employeeRepository.findActiveByEmail(request.email().toLowerCase(Locale.ROOT));
         if (employee == null) {
             return Optional.empty();
@@ -45,6 +46,7 @@ public class AuthenticationService {
         }
 
         String role = employee.role.toLowerCase(Locale.ROOT);
+        String seniority = employee.seniority.toLowerCase(Locale.ROOT);
         String token = Jwt.issuer("people-api")
                 .expiresIn(Duration.ofMinutes(60))
                 .subject(employee.id.toString())
@@ -53,7 +55,8 @@ public class AuthenticationService {
                 .claim("name", employee.name)
                 .groups(Set.of(role))
                 .signWithSecret(jwtSecret);
-        return Optional.of(token);
+
+        return Optional.of(new LoginResponse(token, employee.name, seniority));
     }
 
     public static String hashPassword(String password) {

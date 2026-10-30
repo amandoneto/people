@@ -3,5 +3,5 @@ package org.acme.dto;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
-public record LoginResponse(String token) {
+public record LoginResponse(String token, String name, String seniority) {
 }

@@ -28,7 +28,7 @@ public class AuthenticationResource {
     @Path("/login")
     public Response login(@Valid LoginRequest request) {
         return authenticationService.authenticate(request)
-                .map(token -> Response.ok(new LoginResponse(token)).build())
+                .map(auth -> Response.ok(new LoginResponse(auth.token(), auth.name(), auth.seniority())).build())
                 .orElseGet(() -> Response.status(Response.Status.UNAUTHORIZED).build());
     }
 }
