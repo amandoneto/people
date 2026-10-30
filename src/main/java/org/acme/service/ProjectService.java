@@ -11,20 +11,42 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+/** Business operations for project persistence and message-driven upserts. */
 @ApplicationScoped
 public class ProjectService {
+
+    /** Creates the project service. */
+    public ProjectService() {
+    }
 
     @Inject
     ProjectRepository repository;
 
+    /**
+     * Lists all persisted projects.
+     *
+     * @return all projects
+     */
     public List<Project> listAll() {
         return repository.listAll();
     }
 
+    /**
+     * Finds a project by identifier.
+     *
+     * @param id project identifier
+     * @return the project, or {@code null} if none exists
+     */
     public Project getById(UUID id) {
         return repository.findById(id);
     }
 
+    /**
+     * Creates a project with a newly assigned identifier.
+     *
+     * @param project project to persist
+     * @return the created project
+     */
     @Transactional
     public Project create(Project project) {
         project.id = UUID.randomUUID();
@@ -32,6 +54,12 @@ public class ProjectService {
         return project;
     }
 
+    /**
+     * Updates an existing project with a supplied identifier or creates a new project.
+     *
+     * @param project project values to persist
+     * @return the updated or created project
+     */
     @Transactional
     public Project createOrUpdate(Project project) {
         if (project.id != null) {
@@ -50,6 +78,13 @@ public class ProjectService {
         return project;
     }
 
+    /**
+     * Inserts or updates a project while retaining the message's stable identifier.
+     *
+     * @param project project received from a message
+     * @return the persisted or updated project
+     * @throws IllegalArgumentException if the project has no identifier
+     */
     @Transactional
     public Project upsertFromMessage(Project project) {
         if (project.id == null) {
@@ -74,6 +109,13 @@ public class ProjectService {
         return project;
     }
 
+    /**
+     * Replaces the mutable values of an existing project.
+     *
+     * @param id project identifier
+     * @param updatedProject replacement project values
+     * @return the updated project, or {@code null} if it does not exist
+     */
     @Transactional
     public Project update(UUID id, Project updatedProject) {
         Project project = repository.findById(id);
@@ -88,6 +130,12 @@ public class ProjectService {
         return project;
     }
 
+    /**
+     * Deletes a project by identifier.
+     *
+     * @param id project identifier
+     * @return {@code true} if a project was deleted
+     */
     @Transactional
     public boolean delete(UUID id) {
         return repository.deleteById(id);

@@ -7,6 +7,14 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import org.acme.model.Project;
 
+/**
+ * Project message data with validation constraints for its serialized fields.
+ *
+ * @param id stable project identifier, or {@code null} when the producer assigns one
+ * @param name project name
+ * @param description project description
+ * @param status project lifecycle status
+ */
 public record ProjectDTO(
         UUID id,
         @NotBlank(message = "Project name cannot be blank.")
@@ -19,6 +27,11 @@ public record ProjectDTO(
         @Pattern(regexp = "^(PLANNING|ACTIVE|COMPLETED|CANCELLED)$", message = "Project status must be PLANNING, ACTIVE, COMPLETED, or CANCELLED.")
         String status) {
 
+    /**
+     * Copies this DTO's values into a project entity.
+     *
+     * @return a project populated with this DTO's identifier, name, description, and status
+     */
     public Project toProject() {
         Project project = new Project();
         project.id = id;

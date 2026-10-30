@@ -6,6 +6,11 @@ import org.acme.model.EmployeeCredential;
 
 import java.util.UUID;
 
+/** Panache persistence repository for employee credentials keyed by employee UUID. */
 @ApplicationScoped
 public class EmployeeCredentialRepository implements PanacheRepositoryBase<EmployeeCredential, UUID> {
+
+    /** Creates the employee credential repository. */
+    public EmployeeCredentialRepository() {
+    }
 }

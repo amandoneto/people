@@ -15,15 +15,27 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import java.util.UUID;
 
+/** REST endpoints for creating and managing employees. */
 @Path("/api/employees")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @Authenticated
 public class EmployeeResource {
 
+    /** Creates the employee resource. */
+    public EmployeeResource() {
+    }
+
     @Inject
     EmployeeService employeeService;
 
+    /**
+     * Lists active employees on the requested page.
+     *
+     * @param page zero-based page index
+     * @param pageSize maximum number of employees per page
+     * @return a page of active employees and pagination metadata
+     */
     @GET
     @RolesAllowed({ "admin", "user" })
     public PaginatedResponse<Employee> listAll(
@@ -32,6 +44,12 @@ public class EmployeeResource {
         return employeeService.listAll(page, pageSize);
     }
 
+    /**
+     * Finds an active employee by identifier.
+     *
+     * @param id employee identifier
+     * @return the employee, or a not-found response
+     */
     @GET
     @Path("/{id}")
     @RolesAllowed({ "admin", "user" })
@@ -43,6 +61,12 @@ public class EmployeeResource {
         return Response.ok(employee).build();
     }
 
+    /**
+     * Creates an employee using the supplied profile and password.
+     *
+     * @param request validated employee creation data
+     * @return a created response containing the employee
+     */
     @POST
     @PermitAll
     public Response create(@Valid EmployeeCreateRequest request) {
@@ -50,6 +74,13 @@ public class EmployeeResource {
         return Response.status(Response.Status.CREATED).entity(employee).build();
     }
 
+    /**
+     * Updates an employee profile.
+     *
+     * @param id employee identifier
+     * @param request replacement employee profile data
+     * @return the updated employee, or a not-found response
+     */
     @PUT
     @Path("/{id}")
     @RolesAllowed({ "admin", "user" })
@@ -62,6 +93,12 @@ public class EmployeeResource {
         return Response.ok(employee).build();
     }
 
+    /**
+     * Marks an employee as deleted.
+     *
+     * @param id employee identifier
+     * @return a no-content response, or a not-found response
+     */
     @DELETE
     @Path("/{id}")
     @RolesAllowed("admin")

@@ -21,6 +21,10 @@ public class EmployeeSkillRepository implements PanacheRepositoryBase<EmployeeSk
     @Inject
     EntityManager entityManager;
 
+    /** Creates the employee-skill repository. */
+    public EmployeeSkillRepository() {
+    }
+
     /**
      * Lists associations with their employee and skill relationships initialized.
      *

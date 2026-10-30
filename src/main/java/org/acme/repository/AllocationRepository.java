@@ -6,6 +6,11 @@ import org.acme.model.Allocation;
 
 import java.util.UUID;
 
+/** Panache persistence repository for allocations keyed by UUID. */
 @ApplicationScoped
 public class AllocationRepository implements PanacheRepositoryBase<Allocation, UUID> {
+
+    /** Creates the allocation repository. */
+    public AllocationRepository() {
+    }
 }

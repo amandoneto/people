@@ -11,21 +11,37 @@ import jakarta.ws.rs.core.Response;
 import java.util.List;
 import java.util.UUID;
 
+/** REST endpoints for managing employee project allocations. */
 @Path("/api/allocations")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @Authenticated
 public class AllocationResource {
 
+    /** Creates the allocation resource. */
+    public AllocationResource() {
+    }
+
     @Inject
     AllocationService allocationService;
 
+    /**
+     * Lists all allocations.
+     *
+     * @return all persisted allocations
+     */
     @GET
     @RolesAllowed({ "admin", "user" })
     public List<Allocation> listAll() {
         return allocationService.listAll();
     }
 
+    /**
+     * Finds an allocation by its identifier.
+     *
+     * @param id allocation identifier
+     * @return the allocation, or a not-found response
+     */
     @GET
     @Path("/{id}")
     @RolesAllowed({ "admin", "user" })
@@ -37,6 +53,12 @@ public class AllocationResource {
         return Response.ok(allocation).build();
     }
 
+    /**
+     * Creates an allocation.
+     *
+     * @param allocation allocation data
+     * @return a created response containing the allocation
+     */
     @POST
     @RolesAllowed("admin")
     public Response create(Allocation allocation) {
@@ -44,6 +66,13 @@ public class AllocationResource {
         return Response.status(Response.Status.CREATED).entity(created).build();
     }
 
+    /**
+     * Replaces the allocation data for the specified identifier.
+     *
+     * @param id allocation identifier
+     * @param updatedAllocation replacement allocation data
+     * @return the updated allocation, or a not-found response
+     */
     @PUT
     @Path("/{id}")
     @RolesAllowed({ "admin", "user" })
@@ -56,6 +85,12 @@ public class AllocationResource {
         return Response.ok(allocation).build();
     }
 
+    /**
+     * Deletes an allocation.
+     *
+     * @param id allocation identifier
+     * @return a no-content response, or a not-found response
+     */
     @DELETE
     @Path("/{id}")
     @RolesAllowed("admin")

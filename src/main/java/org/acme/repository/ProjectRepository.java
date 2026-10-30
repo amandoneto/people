@@ -6,6 +6,11 @@ import org.acme.model.Project;
 
 import java.util.UUID;
 
+/** Panache persistence repository for projects keyed by UUID. */
 @ApplicationScoped
 public class ProjectRepository implements PanacheRepositoryBase<Project, UUID> {
+
+    /** Creates the project repository. */
+    public ProjectRepository() {
+    }
 }

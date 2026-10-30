@@ -18,10 +18,15 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
 
+/** Serializes project data and publishes it asynchronously to Kafka. */
 @ApplicationScoped
 public class KafkaMessageProducer {
 
     private static final Logger LOG = Logger.getLogger(KafkaMessageProducer.class);
+
+    /** Creates the Kafka message producer. */
+    public KafkaMessageProducer() {
+    }
 
     @Inject
     ObjectMapper objectMapper;
@@ -42,6 +47,13 @@ public class KafkaMessageProducer {
     @ConfigProperty(name = "kafka.project.publish.retry.max-delay", defaultValue = "PT4S")
     Duration maxRetryDelay;
 
+    /**
+     * Publishes project data, assigning a stable identifier when absent.
+     *
+     * @param project project data to serialize
+     * @return a completion stage that completes when publishing succeeds or fails
+     * @throws IllegalStateException if project serialization fails
+     */
     public CompletionStage<Void> send(ProjectDTO project) {
         try {
             ProjectDTO projectWithStableId = project.id() == null

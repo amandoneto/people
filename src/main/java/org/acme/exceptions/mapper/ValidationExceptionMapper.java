@@ -9,9 +9,20 @@ import java.util.stream.Collectors;
 
 import org.acme.dto.ErrorResponse;
 
+/** Maps bean-validation violations to bad-request API responses. */
 @Provider
 public class ValidationExceptionMapper implements ExceptionMapper<ConstraintViolationException> {
 
+    /** Creates the validation-exception mapper. */
+    public ValidationExceptionMapper() {
+    }
+
+    /**
+     * Converts a validation exception to a response containing its violation messages.
+     *
+     * @param exception validation exception to map
+     * @return bad-request response with the collected validation messages
+     */
     @Override
     public Response toResponse(ConstraintViolationException exception) {
         // Junta todas as mensagens de erro de validação em uma única string (ou você

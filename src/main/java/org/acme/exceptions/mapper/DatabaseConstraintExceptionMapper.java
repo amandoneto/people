@@ -6,9 +6,20 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
 
+/** Maps database constraint violations to conflict API responses. */
 @Provider
 public class DatabaseConstraintExceptionMapper implements ExceptionMapper<ConstraintViolationException> {
 
+    /** Creates the database-constraint mapper. */
+    public DatabaseConstraintExceptionMapper() {
+    }
+
+    /**
+     * Converts a database constraint violation to a conflict response.
+     *
+     * @param exception database constraint violation
+     * @return conflict response with a generic or duplicate-key message
+     */
     @Override
     public Response toResponse(ConstraintViolationException exception) {
         String message = "Database constraint violation.";

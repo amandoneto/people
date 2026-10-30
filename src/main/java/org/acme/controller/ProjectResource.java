@@ -14,6 +14,7 @@ import jakarta.ws.rs.core.Response;
 import java.util.List;
 import java.util.UUID;
 
+/** REST endpoints for managing projects. */
 @Path("/api/projects")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
@@ -23,9 +24,18 @@ public class ProjectResource {
     // Criação do logger padrão da classe
     private static final Logger LOG = Logger.getLogger(ProjectResource.class);
 
+    /** Creates the project resource. */
+    public ProjectResource() {
+    }
+
     @Inject
     ProjectService projectService;
 
+    /**
+     * Lists all projects.
+     *
+     * @return all persisted projects
+     */
     @GET
     @RolesAllowed({ "admin", "user" })
     public List<Project> listAll() {
@@ -33,6 +43,12 @@ public class ProjectResource {
         return projectService.listAll();
     }
 
+    /**
+     * Finds a project by its identifier.
+     *
+     * @param id project identifier
+     * @return the project, or a not-found response
+     */
     @GET
     @Path("/{id}")
     @RolesAllowed({ "admin", "user" })
@@ -45,6 +61,12 @@ public class ProjectResource {
         return Response.ok(project).build();
     }
 
+    /**
+     * Creates a project.
+     *
+     * @param project project data
+     * @return a created response containing the project
+     */
     @POST
     @RolesAllowed("admin")
     public Response create(Project project) {
@@ -53,6 +75,13 @@ public class ProjectResource {
         return Response.status(Response.Status.CREATED).entity(created).build();
     }
 
+    /**
+     * Updates a project.
+     *
+     * @param id project identifier
+     * @param updatedProject replacement project data
+     * @return the updated project, or a not-found response
+     */
     @PUT
     @Path("/{id}")
     @RolesAllowed({ "admin", "user" })
@@ -67,6 +96,12 @@ public class ProjectResource {
         return Response.ok(project).build();
     }
 
+    /**
+     * Deletes a project.
+     *
+     * @param id project identifier
+     * @return a no-content response, or a not-found response
+     */
     @DELETE
     @Path("/{id}")
     @RolesAllowed("admin")

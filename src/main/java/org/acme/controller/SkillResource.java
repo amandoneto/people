@@ -12,15 +12,27 @@ import jakarta.ws.rs.core.Response;
 import java.util.List;
 import java.util.UUID;
 
+/** REST endpoints for managing skills. */
 @Path("/api/skills")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @Authenticated
 public class SkillResource {
 
+    /** Creates the skill resource. */
+    public SkillResource() {
+    }
+
     @Inject
     SkillService skillService;
 
+    /**
+     * Lists skills on the requested page.
+     *
+     * @param page zero-based page index
+     * @param pageSize maximum number of skills per page
+     * @return a page of skills and pagination metadata
+     */
     @GET
     @RolesAllowed({ "admin", "user" })
     public PaginatedResponse<Skill> listAll(
@@ -29,6 +41,12 @@ public class SkillResource {
         return skillService.listAll(page, pageSize);
     }
 
+    /**
+     * Finds a skill by its identifier.
+     *
+     * @param id skill identifier
+     * @return the skill, or a not-found response
+     */
     @GET
     @Path("/{id}")
     @RolesAllowed({ "admin", "user" })
@@ -40,6 +58,12 @@ public class SkillResource {
         return Response.ok(skill).build();
     }
 
+    /**
+     * Creates a skill.
+     *
+     * @param skill skill data
+     * @return a created response containing the skill
+     */
     @POST
     @RolesAllowed("admin")
     public Response create(Skill skill) {
@@ -47,6 +71,12 @@ public class SkillResource {
         return Response.status(Response.Status.CREATED).entity(created).build();
     }
 
+    /**
+     * Creates multiple skills.
+     *
+     * @param skills skill data to persist
+     * @return a created response
+     */
     @POST
     @Path("/list")
     @RolesAllowed("admin")
@@ -56,6 +86,13 @@ public class SkillResource {
         return Response.status(Response.Status.CREATED).build();
     }
 
+    /**
+     * Updates a skill.
+     *
+     * @param id skill identifier
+     * @param updatedSkill replacement skill data
+     * @return the updated skill, or a not-found response
+     */
     @PUT
     @Path("/{id}")
     @RolesAllowed({ "admin", "user" })
@@ -68,6 +105,12 @@ public class SkillResource {
         return Response.ok(skill).build();
     }
 
+    /**
+     * Deletes a skill.
+     *
+     * @param id skill identifier
+     * @return a no-content response, or a not-found response
+     */
     @DELETE
     @Path("/{id}")
     @RolesAllowed("admin")

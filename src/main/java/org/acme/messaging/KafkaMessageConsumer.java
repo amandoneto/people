@@ -18,10 +18,15 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
 
+/** Validates project messages consumed from Kafka and applies them to project storage. */
 @ApplicationScoped
 public class KafkaMessageConsumer {
 
     private static final Logger LOG = Logger.getLogger(KafkaMessageConsumer.class);
+
+    /** Creates the Kafka message consumer. */
+    public KafkaMessageConsumer() {
+    }
 
     @Inject
     ObjectMapper objectMapper;
@@ -32,6 +37,13 @@ public class KafkaMessageConsumer {
     @Inject
     ProjectService projectService;
 
+    /**
+     * Deserializes, validates, and applies a project message.
+     *
+     * @param message serialized project data
+     * @throws IllegalArgumentException if the message is malformed or lacks a project ID
+     * @throws ConstraintViolationException if the project data fails validation
+     */
     @Incoming("project-topic-in")
     public void consume(String message) {
         ProjectDTO projectDTO;

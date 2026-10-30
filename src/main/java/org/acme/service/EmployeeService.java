@@ -23,8 +23,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+/** Employee profile operations backed by an append-only event stream. */
 @ApplicationScoped
 public class EmployeeService {
+
+    /** Creates the employee service. */
+    public EmployeeService() {
+    }
 
     private static final short EVENT_VERSION = 1;
     private static final TypeReference<Map<String, Object>> PAYLOAD_MAP = new TypeReference<>() {
@@ -45,6 +50,12 @@ public class EmployeeService {
     @Inject
     SecurityIdentity securityIdentity;
 
+    /**
+     * Creates an employee, stores a password hash, and appends the creation event.
+     *
+     * @param request employee profile and password
+     * @return the created employee
+     */
     @Transactional
     public Employee create(EmployeeCreateRequest request) {
         Employee employee = new Employee();
@@ -67,6 +78,13 @@ public class EmployeeService {
         return employee;
     }
 
+    /**
+     * Updates an active employee and appends a profile-update event.
+     *
+     * @param employeeId employee identifier
+     * @param request replacement profile values
+     * @return the updated employee, or {@code null} if it is missing or deleted
+     */
     @Transactional
     public Employee update(UUID employeeId, EmployeeUpdateRequest request) {
         Employee employee = employeeRepository.findByIdForUpdate(employeeId);
@@ -84,6 +102,12 @@ public class EmployeeService {
         return employee;
     }
 
+    /**
+     * Soft-deletes an active employee and appends a deletion event.
+     *
+     * @param employeeId employee identifier
+     * @return {@code true} if the employee was deleted
+     */
     @Transactional
     public boolean delete(UUID employeeId) {
         Employee employee = employeeRepository.findByIdForUpdate(employeeId);
@@ -97,6 +121,13 @@ public class EmployeeService {
         return true;
     }
 
+    /**
+     * Reconstructs an employee's state from its ordered event stream.
+     *
+     * @param employeeId employee stream identifier
+     * @return replayed state, or {@code null} if the stream has no events
+     * @throws IllegalStateException if the stream contains an unsupported, invalid, or missing version
+     */
     @Transactional
     public EmployeeReplay replay(UUID employeeId) {
         List<EmployeeEvent> events = eventRepository.findStream(employeeId);
@@ -138,6 +169,13 @@ public class EmployeeService {
         return state == null ? null : new EmployeeReplay(expectedVersion - 1, state);
     }
 
+    /**
+     * Rebuilds the persisted employee projection from its event stream.
+     *
+     * @param employeeId employee identifier
+     * @return {@code true} if the projection was rebuilt, or {@code false} if the employee is missing
+     * @throws IllegalStateException if no event stream exists or it cannot be replayed
+     */
     @Transactional
     public boolean rebuildProjection(UUID employeeId) {
         Employee employee = employeeRepository.findByIdForUpdate(employeeId);
@@ -163,6 +201,13 @@ public class EmployeeService {
         return true;
     }
 
+    /**
+     * Lists active employees on a page.
+     *
+     * @param page zero-based page index
+     * @param pageSize maximum number of employees per page
+     * @return active employees with pagination metadata
+     */
     public PaginatedResponse<Employee> listAll(int page, int pageSize) {
         long totalRecords = employeeRepository.countActive();
         return PaginatedResponse.of(
@@ -172,6 +217,12 @@ public class EmployeeService {
                 pageSize);
     }
 
+    /**
+     * Finds an active employee by identifier.
+     *
+     * @param employeeId employee identifier
+     * @return active employee, or {@code null} if none exists
+     */
     public Employee getActiveById(UUID employeeId) {
         return employeeRepository.findActiveById(employeeId);
     }

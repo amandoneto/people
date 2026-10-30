@@ -19,6 +19,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import io.quarkus.security.Authenticated;
 
+/** REST endpoints for publishing project messages to Kafka. */
 @Path("/api/kafka/projects")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
@@ -27,9 +28,19 @@ public class KafkaMessageResource {
 
     private static final Logger LOG = Logger.getLogger(KafkaMessageResource.class);
 
+    /** Creates the Kafka message resource. */
+    public KafkaMessageResource() {
+    }
+
     @Inject
     KafkaMessageProducer producer;
 
+    /**
+     * Publishes a project message.
+     *
+     * @param project validated project data
+     * @return a stage completing with an accepted response or a service-unavailable response
+     */
     @POST
     @RolesAllowed("admin")
     public CompletionStage<Response> publish(@Valid ProjectDTO project) {
@@ -47,6 +58,12 @@ public class KafkaMessageResource {
                 });
     }
 
+    /**
+     * Publishes a project update message.
+     *
+     * @param project validated project data
+     * @return a stage completing with an accepted response or a service-unavailable response
+     */
     @PUT
     @Path("/update")
     @RolesAllowed("admin")

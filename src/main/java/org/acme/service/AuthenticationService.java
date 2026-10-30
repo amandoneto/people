@@ -16,8 +16,13 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 
+/** Verifies employee credentials and creates signed JWTs for successful logins. */
 @ApplicationScoped
 public class AuthenticationService {
+
+    /** Creates the authentication service. */
+    public AuthenticationService() {
+    }
 
     @Inject
     EmployeeCredentialRepository credentialRepository;
@@ -35,6 +40,12 @@ public class AuthenticationService {
      * }
      */
 
+    /**
+     * Authenticates the supplied email and password.
+     *
+     * @param request login credentials
+     * @return login details when an active employee has matching credentials; otherwise empty
+     */
     public Optional<LoginResponse> authenticate(LoginRequest request) {
         var employee = employeeRepository.findActiveByEmail(request.email().toLowerCase(Locale.ROOT));
         if (employee == null) {
@@ -59,6 +70,12 @@ public class AuthenticationService {
         return Optional.of(new LoginResponse(token, employee.name, seniority));
     }
 
+    /**
+     * Hashes a password using BCrypt.
+     *
+     * @param password plaintext password
+     * @return BCrypt password hash
+     */
     public static String hashPassword(String password) {
         return BcryptUtil.bcryptHash(password, 12);
     }
